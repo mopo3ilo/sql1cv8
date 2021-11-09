@@ -94,7 +94,7 @@ func unmarkStatements(src string) string {
 }
 
 func parseFullConstructions(m Metadata, src string) string {
-	re := regexp.MustCompile(`\[\$([\pL\d\.]+)\]\.\[\$([\pL\d\.]+)\]`)
+	re := regexp.MustCompile(`\[\$([\pL\w\.]+)\]\.\[\$([\pL\w\.]+)\]`)
 	return re.ReplaceAllStringFunc(src, func(s string) string {
 		a := re.FindStringSubmatch(s)
 		tabname := a[1]
@@ -116,14 +116,14 @@ func parseWithAliases(m Metadata, src string) string {
 	res := src
 
 	aliases := map[string]string{}
-	re = regexp.MustCompile(`(?si)(?:\.\.|\[dbo\]\.|\bdbo\.|[^\.])\[\$([\pL\d\.]+)\](?:\s+as\s+|\s+)(?:\[(.+?)\]|(\w+))`)
+	re = regexp.MustCompile(`(?si)(?:\.\.|\[dbo\]\.|\bdbo\.|[^\.])\[\$([\pL\w\.]+)\](?:\s+as\s+|\s+)(?:\[(.+?)\]|(\w+))`)
 	for _, v := range re.FindAllStringSubmatch(res, -1) {
 		tabname := v[1]
 		aliasname := v[2] + v[3]
 		aliases[aliasname] = tabname
 	}
 
-	re = regexp.MustCompile(`(?si)((?:\.\.|\[dbo\]\.|\bdbo\.|[^\.]))\[\$([\pL\d\.]+)\]`)
+	re = regexp.MustCompile(`(?si)((?:\.\.|\[dbo\]\.|\bdbo\.|[^\.]))\[\$([\pL\w\.]+)\]`)
 	res = re.ReplaceAllStringFunc(res, func(s string) string {
 		a := re.FindStringSubmatch(s)
 		prefix := a[1]
@@ -135,7 +135,7 @@ func parseWithAliases(m Metadata, src string) string {
 		return prefix + tableObject.DBName
 	})
 
-	re = regexp.MustCompile(`(?si)((?:\[(.+?)\]|(\w+))\.)\[\$([\pL\d\.]+)\]`)
+	re = regexp.MustCompile(`(?si)((?:\[(.+?)\]|(\w+))\.)\[\$([\pL\w\.]+)\]`)
 	res = re.ReplaceAllStringFunc(res, func(s string) string {
 		a := re.FindStringSubmatch(s)
 		prefix := a[1]
