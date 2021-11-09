@@ -12,13 +12,11 @@ func (m Metadata) Parse(src string) (res string, err error) {
 	res = src
 
 	res, buf = removeStringsAndComments(res, buf)
-	res = markStatements(res)
 	res = parseFullConstructions(m, res)
 	res, err = parseWithBrackets(m, res)
 	if err != nil {
 		return "", err
 	}
-	res = unmarkStatements(res)
 	res = restoreStringsAndComments(res, buf)
 
 	return
@@ -76,10 +74,12 @@ func parseWithBrackets(m Metadata, src string) (res string, err error) {
 		}
 	}
 
+	res = markStatements(res)
 	re = regexp.MustCompile(`¡[^¡]+`)
 	res = re.ReplaceAllStringFunc(res, func(s string) string {
 		return parseWithAliases(m, s)
 	})
+	res = unmarkStatements(res)
 
 	return
 }
