@@ -1,4 +1,4 @@
-module sql1cv8
+module github.com/mopo3ilo/sql1cv8
 
 go 1.17
 
