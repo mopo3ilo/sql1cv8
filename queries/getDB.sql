@@ -69,6 +69,51 @@ select * from (
     and t.name not like '%[_]VT[0-9]%'
   union all
 
+  -- ПланВидовХарактеристик
+  select DataType     = 'Chrc'
+        ,TableName    = t.name
+        ,FieldName    = c.name
+        ,TablePrefix  = 'ПланВидовХарактеристик.'
+        ,TableNumber  = substring(t.name, 6, 10)
+        ,TableSuffix  = ''
+        ,VTPrefix     = ''
+        ,VTNumber     = ''
+        ,VTSuffix     = ''
+        ,FieldPrefix  = case
+          when c.name = '_IDRRef' then 'Ссылка'
+          when c.name = '_ParentIDRRef' then 'Родитель'
+          when left(c.name, 8) = '_OwnerID' then 'Владелец'
+          when c.name = '_PredefinedID' then 'Предопределенное'
+          when c.name = '_Version' then 'Версия'
+          when c.name = '_Marked' then 'ПометкаУдаления'
+          when c.name = '_Folder' then 'Группа'
+          when c.name = '_Code' then 'Код'
+          when c.name = '_Description' then 'Наименование'
+          when c.name = '_Type' then 'ТипЗначения'
+          else ''
+        end
+        ,FieldNumber  = case
+          when left(c.name, 4) = '_Fld' then substring(c.name, 5, patindex('%[^0-9]%', substring(c.name, 5, 10) + '.') - 1)
+          else ''
+        end
+        ,FieldSuffix  = case
+          when right(c.name, 5) = '_TYPE' then '.Тип'
+          when right(c.name, 2) = '_L' then '.Булево'
+          when right(c.name, 2) = '_N' then '.Число'
+          when right(c.name, 2) = '_T' then '.Дата'
+          when right(c.name, 2) = '_S' then '.Строка'
+          when right(c.name, 2) = '_B' then '.Двоичный'
+          when right(c.name, 6) = '_RTRef' then '.ВидСсылки'
+          when right(c.name, 6) = '_RRRef' then '.Ссылка'
+          else ''
+        end
+  from sys.tables t
+      ,sys.columns c
+  where t.object_id = c.object_id
+    and t.name like '[_]Chrc[0-9]%'
+    and t.name not like '%[_]VT[0-9]%'
+  union all
+
   -- Справочник
   select DataType     = 'Reference'
         ,TableName    = t.name
@@ -387,6 +432,43 @@ select * from (
   where t.object_id = c.object_id
     and t.name like '[_]AccumRgTn[0-9]%'
     and t.name not like '%[_]VT[0-9]%'
+  union all
+
+  -- ПланВидовХарактеристик.ТабличнаяЧасть
+  select DataType     = 'VT'
+        ,TableName    = t.name
+        ,FieldName    = c.name
+        ,TablePrefix  = 'ПланВидовХарактеристик.'
+        ,TableNumber  = substring(t.name, 6, patindex('%[^0-9]%', substring(t.name, 6, 10) + '.') - 1)
+        ,TableSuffix  = ''
+        ,VTPrefix     = '.ТабличнаяЧасть.'
+        ,VTNumber     = substring(t.name, charindex('_VT', t.name) + 3, patindex('%[^0-9]%', substring(t.name, charindex('_VT', t.name) + 3, 10) + '.') - 1)
+        ,VTSuffix     = ''
+        ,FieldPrefix  = case
+          when right(c.name, 7) = '_IDRRef' then 'Ссылка'
+          when c.name = '_KeyField' then 'КлючЗаписи'
+          when left(c.name, 7) = '_LineNo' then 'НомерСтроки'
+          else ''
+        end
+        ,FieldNumber  = case
+          when left(c.name, 4) = '_Fld' then substring(c.name, 5, patindex('%[^0-9]%', substring(c.name, 5, 10) + '.') - 1)
+          else ''
+        end
+        ,FieldSuffix  = case
+          when right(c.name, 5) = '_TYPE' then '.Тип'
+          when right(c.name, 2) = '_L' then '.Булево'
+          when right(c.name, 2) = '_N' then '.Число'
+          when right(c.name, 2) = '_T' then '.Дата'
+          when right(c.name, 2) = '_S' then '.Строка'
+          when right(c.name, 2) = '_B' then '.Двоичный'
+          when right(c.name, 6) = '_RTRef' then '.ВидСсылки'
+          when right(c.name, 6) = '_RRRef' then '.Ссылка'
+          else ''
+        end
+  from sys.tables t
+      ,sys.columns c
+  where t.object_id = c.object_id
+    and t.name like '[_]Chrc[0-9]%[_]VT[0-9]%'
   union all
 
   -- Справочник.ТабличнаяЧасть
