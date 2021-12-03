@@ -15,9 +15,9 @@ import (
 
 // LoadNewer возвращает метаданные из базы данных, либо из файла, если объекты в базе не менялись.
 // В качестве параметров принимает две строковые переменные:
-// cs - строка подключения, описание которой можно посмотреть по ссылке https://github.com/denisenkom/go-mssqldb#connection-parameters-and-dsn
-// s - имя файла, в котором хранится кэш метаданных в формате json
-// Возвращает объект Metadata
+// cs - строка подключения, описание которой можно посмотреть по ссылке https://github.com/denisenkom/go-mssqldb#connection-parameters-and-dsn;
+// s - имя файла, в котором хранится кэш метаданных в формате json.
+// Возвращает объект Metadata.
 func LoadNewer(cs, s string) (m Metadata, err error) {
 	var version string
 	m, err = LoadFromFile(s)
@@ -46,8 +46,8 @@ func LoadNewer(cs, s string) (m Metadata, err error) {
 
 // LoadFromDB возвращает метаданные.
 // В качестве параметров принимает строковую переменную:
-// cs - строка подключения, описание которой можно посмотреть по ссылке https://github.com/denisenkom/go-mssqldb#connection-parameters-and-dsn
-// Возвращает объект Metadata
+// cs - строка подключения, описание которой можно посмотреть по ссылке https://github.com/denisenkom/go-mssqldb#connection-parameters-and-dsn.
+// Возвращает объект Metadata.
 func LoadFromDB(cs string) (m Metadata, err error) {
 	base, err := sql.Open("sqlserver", cs)
 	if err != nil {
@@ -240,8 +240,8 @@ func LoadFromDB(cs string) (m Metadata, err error) {
 
 // LoadFromFile возвращает метаданные из файла.
 // В качестве параметров принимает строковую переменную:
-// s - имя файла, в котором хранится кэш метаданных в формате json
-// Возвращает объект Metadata
+// s - имя файла, в котором хранится кэш метаданных в формате json.
+// Возвращает объект Metadata.
 func LoadFromFile(s string) (m Metadata, err error) {
 	f, err := os.Open(s)
 	if err != nil {
@@ -258,7 +258,7 @@ func LoadFromFile(s string) (m Metadata, err error) {
 
 // SaveToFile сохраняет метаданные в файл.
 // В качестве параметров принимает строковую переменную:
-// s - имя файла, в котором хранится кэш метаданных в формате json
+// s - имя файла, в котором хранится кэш метаданных в формате json.
 func (m Metadata) SaveToFile(s string) (err error) {
 	b, err := json.Marshal(m)
 	if err != nil {

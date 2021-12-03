@@ -7,17 +7,13 @@ import (
 
 // Объект метаданных
 type Object struct {
-	// Номер объекта в десятеричной системе
-	Number string
-	// Имя объекта в базе данных
-	DBName string
-	// Имя объекта в конфигурации
-	CVName string
-	// Параметры объекта
-	Fields map[string]*Object
+	Number string             // Номер объекта в десятеричной системе
+	DBName string             // Имя объекта в базе данных
+	CVName string             // Имя объекта в конфигурации
+	Fields map[string]*Object // Параметры объекта
 }
 
-// RTRefInt возвращает ВидСсылки типа INT
+// RTRefInt возвращает ВидСсылки типа INT.
 func (o *Object) RTRefInt() (string, error) {
 	_, err := strconv.ParseUint(o.Number, 0, 32)
 	if err != nil {
@@ -26,7 +22,7 @@ func (o *Object) RTRefInt() (string, error) {
 	return o.Number, nil
 }
 
-// RTRefBin возвращает ВидСсылки типа BINARY(4)
+// RTRefBin возвращает ВидСсылки типа BINARY(4).
 func (o *Object) RTRefBin() (string, error) {
 	u, err := strconv.ParseUint(o.Number, 0, 32)
 	if err != nil {
@@ -37,9 +33,6 @@ func (o *Object) RTRefBin() (string, error) {
 
 // Метаданные
 type Metadata struct {
-	// Версия метаданных
-	Version string
-	// Объекты метаданных первого уровня.
-	// Это либо таблицы, либо какие-то констаты вроде типов полей для составных типов, значения перечислений и виды ссылок
-	Tables map[string]*Object
+	Version string             // Версия метаданных
+	Tables  map[string]*Object // Объекты метаданных первого уровня. Это либо таблицы, либо какие-то констаты вроде типов полей для составных типов, значения перечислений и виды ссылок
 }
