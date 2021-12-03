@@ -7,6 +7,10 @@ import (
 	"strings"
 )
 
+// Parse преобразует в тексте имена метаданных в имена базы данных.
+// В качестве параметров принимает строковую переменную:
+// src - текст запроса
+// Возвращает изменённый запрос res
 func (m Metadata) Parse(src string) (res string, err error) {
 	buf := []string{}
 	res = src
