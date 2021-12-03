@@ -13,6 +13,11 @@ import (
 	_ "github.com/denisenkom/go-mssqldb"
 )
 
+// LoadNewer возвращает метаданные из базы данных, либо из файла, если объекты в базе не менялись.
+// В качестве параметров принимает две строковые переменные:
+// cs - строка подключения, описание которой можно посмотреть по ссылке https://github.com/denisenkom/go-mssqldb#connection-parameters-and-dsn
+// s - имя файла, в котором хранится кэш метаданных в формате json
+// Возвращает объект Metadata
 func LoadNewer(cs, s string) (m Metadata, err error) {
 	var version string
 	m, err = LoadFromFile(s)
@@ -39,6 +44,10 @@ func LoadNewer(cs, s string) (m Metadata, err error) {
 	return
 }
 
+// LoadFromDB возвращает метаданные.
+// В качестве параметров принимает строковую переменную:
+// cs - строка подключения, описание которой можно посмотреть по ссылке https://github.com/denisenkom/go-mssqldb#connection-parameters-and-dsn
+// Возвращает объект Metadata
 func LoadFromDB(cs string) (m Metadata, err error) {
 	base, err := sql.Open("sqlserver", cs)
 	if err != nil {
@@ -229,6 +238,10 @@ func LoadFromDB(cs string) (m Metadata, err error) {
 	return
 }
 
+// LoadFromFile возвращает метаданные из файла.
+// В качестве параметров принимает строковую переменную:
+// s - имя файла, в котором хранится кэш метаданных в формате json
+// Возвращает объект Metadata
 func LoadFromFile(s string) (m Metadata, err error) {
 	f, err := os.Open(s)
 	if err != nil {
@@ -243,6 +256,9 @@ func LoadFromFile(s string) (m Metadata, err error) {
 	return
 }
 
+// SaveToFile сохраняет метаданные в файл.
+// В качестве параметров принимает строковую переменную:
+// s - имя файла, в котором хранится кэш метаданных в формате json
 func (m Metadata) SaveToFile(s string) (err error) {
 	b, err := json.Marshal(m)
 	if err != nil {
