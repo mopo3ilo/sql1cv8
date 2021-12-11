@@ -5,7 +5,7 @@ import (
 	"strconv"
 )
 
-// Объект метаданных
+// Object объект метаданных
 type Object struct {
 	Number string             // Номер объекта в десятеричной системе
 	DBName string             // Имя объекта в базе данных
@@ -31,7 +31,7 @@ func (o *Object) RTRefBin() (string, error) {
 	return fmt.Sprintf("0x%08X", u), nil
 }
 
-// Метаданные
+// Metadata метаданные
 type Metadata struct {
 	Version string             // Версия метаданных
 	Tables  map[string]*Object // Объекты метаданных первого уровня. Это либо таблицы, либо какие-то констаты вроде типов полей для составных типов, значения перечислений и виды ссылок

@@ -1,4 +1,13 @@
-# Описание
+# sql1cv8
+
+[![tag](https://img.shields.io/github/v/tag/mopo3ilo/sql1cv8?sort=semver)](https://github.com/mopo3ilo/sql1cv8/tags)
+[![go version](https://img.shields.io/github/go-mod/go-version/mopo3ilo/sql1cv8?label=go+version)](https://go.dev/dl)
+[![godoc](https://img.shields.io/badge/godoc-reference-blue.svg)](https://pkg.go.dev/github.com/mopo3ilo/sql1cv8)
+[![go report](https://goreportcard.com/badge/github.com/mopo3ilo/sql1cv8)](https://goreportcard.com/report/github.com/mopo3ilo/sql1cv8)
+[![travis](https://img.shields.io/travis/mopo3ilo/sql1cv8)](https://app.travis-ci.com/mopo3ilo/sql1cv8)
+[![codecov](https://img.shields.io/codecov/c/github/mopo3ilo/sql1cv8)](https://codecov.io/gh/mopo3ilo/sql1cv8)
+
+## Описание
 
 Модуль для преобразования метаданных 1Cv8 в объекты базы данных в запросах.
 
@@ -10,22 +19,22 @@
 - [Размещение данных 1С:Предприятия 8. Таблицы и поля](https://its.1c.ru/db/metod8dev/content/1798/hdoc)
 - [Особенности хранения составных типов данных](https://its.1c.ru/db/metod8dev/content/1828/hdoc)
 
-# Установка
+## Установка
 
 Ничем не отличается от установки других модулей
 ```shell
 go get -u github.com/mopo3ilo/sql1cv8
 ```
 
-# Использование
+## Использование
 
-## Описание модуля
+### Описание модуля
 
 Модуль экспортирует достаточно мало типов и методов. Их описание можно посмотреть как в самом коде, так и на [pkg.go.dev](https://pkg.go.dev/github.com/mopo3ilo/sql1cv8)
 
 Могу дать только одну рекомендацию: желательно использовать метод **LoadNewer** вместо **LoadFromDB**, т.к. загрузка метаданных из базы затратна. Рекомендуемый метод сравнивает версию метаданных в файле и в базе данных, и обновляет файл только в том случае, если объекты были изменены.
 
-## Пример работы с модулем
+### Пример работы с модулем
 
 ```go
 package main
@@ -63,7 +72,7 @@ func main() {
 }
 ```
 
-## Поддерживаемые объекты метаданных
+### Поддерживаемые объекты метаданных
 
 Стандартные объекты:
 - Константа.*ИмяКонстанты*
@@ -176,7 +185,7 @@ func main() {
 
 Все объекты, которые должны быть обработаны должны быть заключены в конструкцию **[$...]**. Смотрите примеры, чтобы стало понятнее.
 
-## Примеры написания запросов
+### Примеры написания запросов
 
 Модуль понимает алиасы для таблиц, поэтому оба следующих запроса будут работать корректно.
 ```sql
