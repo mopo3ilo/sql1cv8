@@ -28,11 +28,11 @@ jobs:
       run: |
         curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
         curl https://packages.microsoft.com/config/ubuntu/20.04/prod.list | sudo tee /etc/apt/sources.list.d/msprod.list
-        sudo apt-get update 
+        sudo apt-get update
         sudo apt-get install mssql-tools
 
     - name: create database
-      run: sqlcmd -U sa -P Bu,Quiexie4aenee -H localhost -d master -l 5 -t 30 -i ./database_test.sql
+      run: /opt/mssql-tools/bin/sqlcmd -U sa -P Bu,Quiexie4aenee -H localhost -d master -l 5 -t 30 -i ./database_test.sql
 
     - name: test
       run: go test -v ./...

@@ -140,9 +140,10 @@ func LoadFromDB(cs string) (m Metadata, err error) {
 	defer rows.Close()
 
 	var (
-		tn, vn                   string
-		tableCVName              string
-		tableObject, fieldObject *Object
+		tn, vn                       string
+		ttExist, vtExist, flExist    bool
+		ttCVName, vtCVName, flCVName string
+		tableObject, fieldObject     *Object
 	)
 
 	for rows.Next() {
@@ -182,11 +183,17 @@ func LoadFromDB(cs string) (m Metadata, err error) {
 		if tn != tableNumber {
 			tn = tableNumber
 			vn = ""
-			tableCVName = tablePrefix + db.names[tableNumber] + tableSuffix
+
+			ttCVName, ttExist = db.names[tableNumber]
+			if !ttExist {
+				continue
+			}
+
+			ttCVName = tablePrefix + ttCVName + tableSuffix
 
 			if dataType == "Enum" {
 				for i, v := range db.childs[tableNumber] {
-					name := tableCVName + "." + v
+					name := ttCVName + "." + v
 					m.Tables[name] = &Object{
 						DBName: strconv.Itoa(i),
 						CVName: name,
@@ -197,7 +204,7 @@ func LoadFromDB(cs string) (m Metadata, err error) {
 			tableObject = &Object{
 				Number: tableNumber,
 				DBName: tableName,
-				CVName: tableCVName,
+				CVName: ttCVName,
 				Fields: make(map[string]*Object),
 			}
 			m.Tables[tableObject.CVName] = tableObject
@@ -207,30 +214,48 @@ func LoadFromDB(cs string) (m Metadata, err error) {
 				if err != nil {
 					return
 				}
-				name := tableCVName + ".ВидСсылки"
+				name := ttCVName + ".ВидСсылки"
 				m.Tables[name] = &Object{
 					DBName: tableType,
 					CVName: "ВидСсылки",
 				}
 			}
 		}
+		if !ttExist {
+			continue
+		}
 
 		if vn != vtNumber {
 			vn = vtNumber
 
+			vtCVName, vtExist = db.names[vtNumber]
+			if !vtExist {
+				continue
+			}
+
+			vtCVName = ttCVName + vtPrefix + vtCVName + vtSuffix
+
 			tableObject = &Object{
 				Number: vtNumber,
 				DBName: tableName,
-				CVName: tableCVName + vtPrefix + db.names[vtNumber] + vtSuffix,
+				CVName: vtCVName,
 				Fields: make(map[string]*Object),
 			}
 			m.Tables[tableObject.CVName] = tableObject
+		}
+		if !vtExist {
+			continue
+		}
+
+		flCVName, flExist = db.names[fieldNumber]
+		if !flExist {
+			continue
 		}
 
 		fieldObject = &Object{
 			Number: fieldNumber,
 			DBName: fieldName,
-			CVName: fieldPrefix + db.names[fieldNumber] + fieldSuffix,
+			CVName: fieldPrefix + flCVName + fieldSuffix,
 		}
 		tableObject.Fields[fieldObject.CVName] = fieldObject
 	}

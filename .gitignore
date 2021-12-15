@@ -1,5 +1,2 @@
 __debug_bin
-*_test.go
 metadata.json
-result.sql
-test.sql
