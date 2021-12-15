@@ -133,6 +133,10 @@ func LoadFromDB(cs string) (m Metadata, err error) {
 		db.childs[number] = cv.childs[id]
 	}
 
+	for k, v := range fields {
+		db.names[k] = v
+	}
+
 	rows, err = base.Query(qryGetDB)
 	if err != nil {
 		return

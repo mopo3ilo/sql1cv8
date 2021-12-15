@@ -9,13 +9,10 @@ select * from (
         ,VTPrefix     = ''
         ,VTNumber     = ''
         ,VTSuffix     = ''
-        ,FieldPrefix  = case
-          when c.name = '_RecordKey' then 'КлючЗаписи'
-          else ''
-        end
+        ,FieldPrefix  = ''
         ,FieldNumber  = case
           when left(c.name, 4) = '_Fld' then substring(c.name, 5, patindex('%[^0-9]%', substring(c.name, 5, 10) + '.') - 1)
-          else ''
+          else c.name
         end
         ,FieldSuffix  = case
           when right(c.name, 5) = '_TYPE' then '.Тип'
@@ -45,12 +42,8 @@ select * from (
         ,VTPrefix     = ''
         ,VTNumber     = ''
         ,VTSuffix     = ''
-        ,FieldPrefix  = case
-          when c.name = '_EnumOrder' then 'Порядок'
-          when c.name = '_IDRRef' then 'Ссылка'
-          else ''
-        end
-        ,FieldNumber  = ''
+        ,FieldPrefix  = ''
+        ,FieldNumber  = c.name
         ,FieldSuffix  = case
           when right(c.name, 5) = '_TYPE' then '.Тип'
           when right(c.name, 2) = '_L' then '.Булево'
@@ -79,22 +72,11 @@ select * from (
         ,VTPrefix     = ''
         ,VTNumber     = ''
         ,VTSuffix     = ''
-        ,FieldPrefix  = case
-          when c.name = '_IDRRef' then 'Ссылка'
-          when c.name = '_ParentIDRRef' then 'Родитель'
-          when left(c.name, 8) = '_OwnerID' then 'Владелец'
-          when c.name = '_PredefinedID' then 'Предопределенное'
-          when c.name = '_Version' then 'Версия'
-          when c.name = '_Marked' then 'ПометкаУдаления'
-          when c.name = '_Folder' then 'Группа'
-          when c.name = '_Code' then 'Код'
-          when c.name = '_Description' then 'Наименование'
-          when c.name = '_Type' then 'ТипЗначения'
-          else ''
-        end
+        ,FieldPrefix  = ''
         ,FieldNumber  = case
           when left(c.name, 4) = '_Fld' then substring(c.name, 5, patindex('%[^0-9]%', substring(c.name, 5, 10) + '.') - 1)
-          else ''
+          when left(c.name, 8) = '_OwnerID' then '_OwnerID'
+          else c.name
         end
         ,FieldSuffix  = case
           when right(c.name, 5) = '_TYPE' then '.Тип'
@@ -124,21 +106,11 @@ select * from (
         ,VTPrefix     = ''
         ,VTNumber     = ''
         ,VTSuffix     = ''
-        ,FieldPrefix  = case
-          when c.name = '_IDRRef' then 'Ссылка'
-          when c.name = '_ParentIDRRef' then 'Родитель'
-          when left(c.name, 8) = '_OwnerID' then 'Владелец'
-          when c.name = '_PredefinedID' then 'Предопределенное'
-          when c.name = '_Version' then 'Версия'
-          when c.name = '_Marked' then 'ПометкаУдаления'
-          when c.name = '_Folder' then 'Группа'
-          when c.name = '_Code' then 'Код'
-          when c.name = '_Description' then 'Наименование'
-          else ''
-        end
+        ,FieldPrefix  = ''
         ,FieldNumber  = case
           when left(c.name, 4) = '_Fld' then substring(c.name, 5, patindex('%[^0-9]%', substring(c.name, 5, 10) + '.') - 1)
-          else ''
+          when left(c.name, 8) = '_OwnerID' then '_OwnerID'
+          else c.name
         end
         ,FieldSuffix  = case
           when right(c.name, 5) = '_TYPE' then '.Тип'
@@ -168,19 +140,10 @@ select * from (
         ,VTPrefix     = ''
         ,VTNumber     = ''
         ,VTSuffix     = ''
-        ,FieldPrefix  = case
-          when c.name = '_IDRRef' then 'Ссылка'
-          when c.name = '_Version' then 'Версия'
-          when c.name = '_Marked' then 'ПометкаУдаления'
-          when c.name = '_Posted' then 'Проведен'
-          when c.name = '_Date_Time' then 'Дата'
-          when c.name = '_NumberPrefix' then 'Префикс'
-          when c.name = '_Number' then 'Номер'
-          else ''
-        end
+        ,FieldPrefix  = ''
         ,FieldNumber  = case
           when left(c.name, 4) = '_Fld' then substring(c.name, 5, patindex('%[^0-9]%', substring(c.name, 5, 10) + '.') - 1)
-          else ''
+          else c.name
         end
         ,FieldSuffix  = case
           when right(c.name, 5) = '_TYPE' then '.Тип'
@@ -210,17 +173,10 @@ select * from (
         ,VTPrefix     = ''
         ,VTNumber     = ''
         ,VTSuffix     = ''
-        ,FieldPrefix  = case
-          when c.name = '_Period' then 'Период'
-          when c.name = '_RecorderRRef' then 'Регистратор'
-          when c.name = '_RecorderTRef' then 'ВидРегистратора'
-          when c.name = '_Active' then 'Активность'
-          when c.name = '_LineNo' then 'НомерСтроки'
-          else ''
-        end
+        ,FieldPrefix  = ''
         ,FieldNumber  = case
           when left(c.name, 4) = '_Fld' then substring(c.name, 5, patindex('%[^0-9]%', substring(c.name, 5, 10) + '.') - 1)
-          else ''
+          else c.name
         end
         ,FieldSuffix  = case
           when right(c.name, 5) = '_TYPE' then '.Тип'
@@ -250,15 +206,10 @@ select * from (
         ,VTPrefix     = ''
         ,VTNumber     = ''
         ,VTSuffix     = ''
-        ,FieldPrefix  = case
-          when c.name = '_Period' then 'Период'
-          when c.name = '_RecorderRRef' then 'Регистратор'
-          when c.name = '_RecorderTRef' then 'ВидРегистратора'
-          else ''
-        end
+        ,FieldPrefix  = ''
         ,FieldNumber  = case
           when left(c.name, 4) = '_Fld' then substring(c.name, 5, patindex('%[^0-9]%', substring(c.name, 5, 10) + '.') - 1)
-          else ''
+          else c.name
         end
         ,FieldSuffix  = case
           when right(c.name, 5) = '_TYPE' then '.Тип'
@@ -288,15 +239,10 @@ select * from (
         ,VTPrefix     = ''
         ,VTNumber     = ''
         ,VTSuffix     = ''
-        ,FieldPrefix  = case
-          when c.name = '_Period' then 'Период'
-          when c.name = '_RecorderRRef' then 'Регистратор'
-          when c.name = '_RecorderTRef' then 'ВидРегистратора'
-          else ''
-        end
+        ,FieldPrefix  = ''
         ,FieldNumber  = case
           when left(c.name, 4) = '_Fld' then substring(c.name, 5, patindex('%[^0-9]%', substring(c.name, 5, 10) + '.') - 1)
-          else ''
+          else c.name
         end
         ,FieldSuffix  = case
           when right(c.name, 5) = '_TYPE' then '.Тип'
@@ -326,19 +272,10 @@ select * from (
         ,VTPrefix     = ''
         ,VTNumber     = ''
         ,VTSuffix     = ''
-        ,FieldPrefix  = case
-          when c.name = '_Period' then 'Период'
-          when c.name = '_RecorderRRef' then 'Регистратор'
-          when c.name = '_RecorderTRef' then 'ВидРегистратора'
-          when c.name = '_Active' then 'Активность'
-          when c.name = '_LineNo' then 'НомерСтроки'
-          when c.name = '_RecordKind' then 'ВидДвижения'
-          when c.name = '_DimHash' then 'ХэшИзмерений'
-          else ''
-        end
+        ,FieldPrefix  = ''
         ,FieldNumber  = case
           when left(c.name, 4) = '_Fld' then substring(c.name, 5, patindex('%[^0-9]%', substring(c.name, 5, 10) + '.') - 1)
-          else ''
+          else c.name
         end
         ,FieldSuffix  = case
           when right(c.name, 5) = '_TYPE' then '.Тип'
@@ -368,15 +305,10 @@ select * from (
         ,VTPrefix     = ''
         ,VTNumber     = ''
         ,VTSuffix     = ''
-        ,FieldPrefix  = case
-          when c.name = '_Period' then 'Период'
-          when c.name = '_Splitter' then 'Разделитель'
-          when c.name = '_DimHash' then 'ХэшИзмерений'
-          else ''
-        end
+        ,FieldPrefix  = ''
         ,FieldNumber  = case
           when left(c.name, 4) = '_Fld' then substring(c.name, 5, patindex('%[^0-9]%', substring(c.name, 5, 10) + '.') - 1)
-          else ''
+          else c.name
         end
         ,FieldSuffix  = case
           when right(c.name, 5) = '_TYPE' then '.Тип'
@@ -406,15 +338,10 @@ select * from (
         ,VTPrefix     = ''
         ,VTNumber     = ''
         ,VTSuffix     = ''
-        ,FieldPrefix  = case
-          when c.name = '_Period' then 'Период'
-          when c.name = '_Splitter' then 'Разделитель'
-          when c.name = '_DimHash' then 'ХэшИзмерений'
-          else ''
-        end
+        ,FieldPrefix  = ''
         ,FieldNumber  = case
           when left(c.name, 4) = '_Fld' then substring(c.name, 5, patindex('%[^0-9]%', substring(c.name, 5, 10) + '.') - 1)
-          else ''
+          else c.name
         end
         ,FieldSuffix  = case
           when right(c.name, 5) = '_TYPE' then '.Тип'
@@ -444,15 +371,12 @@ select * from (
         ,VTPrefix     = '.ТабличнаяЧасть.'
         ,VTNumber     = substring(t.name, charindex('_VT', t.name) + 3, patindex('%[^0-9]%', substring(t.name, charindex('_VT', t.name) + 3, 10) + '.') - 1)
         ,VTSuffix     = ''
-        ,FieldPrefix  = case
-          when right(c.name, 7) = '_IDRRef' then 'Ссылка'
-          when c.name = '_KeyField' then 'КлючЗаписи'
-          when left(c.name, 7) = '_LineNo' then 'НомерСтроки'
-          else ''
-        end
+        ,FieldPrefix  = ''
         ,FieldNumber  = case
           when left(c.name, 4) = '_Fld' then substring(c.name, 5, patindex('%[^0-9]%', substring(c.name, 5, 10) + '.') - 1)
-          else ''
+          when left(c.name, 5) = '_Chrc' and right(c.name, 7) = '_IDRRef' then '_IDRRef'
+          when left(c.name, 7) = '_LineNo' then '_LineNo'
+          else c.name
         end
         ,FieldSuffix  = case
           when right(c.name, 5) = '_TYPE' then '.Тип'
@@ -481,15 +405,12 @@ select * from (
         ,VTPrefix     = '.ТабличнаяЧасть.'
         ,VTNumber     = substring(t.name, charindex('_VT', t.name) + 3, patindex('%[^0-9]%', substring(t.name, charindex('_VT', t.name) + 3, 10) + '.') - 1)
         ,VTSuffix     = ''
-        ,FieldPrefix  = case
-          when right(c.name, 7) = '_IDRRef' then 'Ссылка'
-          when c.name = '_KeyField' then 'КлючЗаписи'
-          when left(c.name, 7) = '_LineNo' then 'НомерСтроки'
-          else ''
-        end
+        ,FieldPrefix  = ''
         ,FieldNumber  = case
           when left(c.name, 4) = '_Fld' then substring(c.name, 5, patindex('%[^0-9]%', substring(c.name, 5, 10) + '.') - 1)
-          else ''
+          when left(c.name, 10) = '_Reference' and right(c.name, 7) = '_IDRRef' then '_IDRRef'
+          when left(c.name, 7) = '_LineNo' then '_LineNo'
+          else c.name
         end
         ,FieldSuffix  = case
           when right(c.name, 5) = '_TYPE' then '.Тип'
@@ -518,15 +439,12 @@ select * from (
         ,VTPrefix     = '.ТабличнаяЧасть.'
         ,VTNumber     = substring(t.name, charindex('_VT', t.name) + 3, patindex('%[^0-9]%', substring(t.name, charindex('_VT', t.name) + 3, 10) + '.') - 1)
         ,VTSuffix     = ''
-        ,FieldPrefix  = case
-          when right(c.name, 7) = '_IDRRef' then 'Ссылка'
-          when c.name = '_KeyField' then 'КлючЗаписи'
-          when left(c.name, 7) = '_LineNo' then 'НомерСтроки'
-          else ''
-        end
+        ,FieldPrefix  = ''
         ,FieldNumber  = case
           when left(c.name, 4) = '_Fld' then substring(c.name, 5, patindex('%[^0-9]%', substring(c.name, 5, 10) + '.') - 1)
-          else ''
+          when left(c.name, 9) = '_Document' and right(c.name, 7) = '_IDRRef' then '_IDRRef'
+          when left(c.name, 7) = '_LineNo' then '_LineNo'
+          else c.name
         end
         ,FieldSuffix  = case
           when right(c.name, 5) = '_TYPE' then '.Тип'
