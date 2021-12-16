@@ -16,6 +16,7 @@ func (m Metadata) Parse(src string) (res string, err error) {
 	res = src
 
 	res, buf = removeStringsAndComments(res, buf)
+	res = parseShorts(m, res)
 	res = markStatements(res)
 	res = parseFullConstructions(m, res)
 	res, err = parseWithBrackets(m, res)
@@ -79,7 +80,7 @@ func parseWithBrackets(m Metadata, src string) (res string, err error) {
 		}
 	}
 
-	re = regexp.MustCompile(`¡[^¡]+`)
+	re = regexp.MustCompile(`▶[^▶]+`)
 	res = re.ReplaceAllStringFunc(res, func(s string) string {
 		return parseWithAliases(m, s)
 	})
@@ -89,12 +90,26 @@ func parseWithBrackets(m Metadata, src string) (res string, err error) {
 }
 
 func markStatements(src string) string {
+	src = "▶" + src
 	re := regexp.MustCompile(`(?si)\b((?:select|bulk|insert|update|delete|merge)\s)`)
-	return re.ReplaceAllString(src, `¡$1`)
+	return re.ReplaceAllString(src, `▶$1`)
 }
 
 func unmarkStatements(src string) string {
-	return strings.ReplaceAll(src, "¡", "")
+	return strings.ReplaceAll(src, "▶", "")
+}
+
+func parseShorts(m Metadata, src string) string {
+	re := regexp.MustCompile(`\[\$(\$[\pL\w\.]+)\]`)
+	return re.ReplaceAllStringFunc(src, func(s string) string {
+		a := re.FindStringSubmatch(s)
+		tabname := a[1]
+		tableObject, ok := m.Objects[tabname]
+		if !ok {
+			return s
+		}
+		return tableObject.DBName
+	})
 }
 
 func parseFullConstructions(m Metadata, src string) string {
@@ -103,11 +118,11 @@ func parseFullConstructions(m Metadata, src string) string {
 		a := re.FindStringSubmatch(s)
 		tabname := a[1]
 		colname := a[2]
-		tableObject, ok := m.Tables[tabname]
+		tableObject, ok := m.Objects[tabname]
 		if !ok {
 			return s
 		}
-		fieldObject, ok := tableObject.Fields[colname]
+		fieldObject, ok := tableObject.Params[colname]
 		if !ok {
 			return s
 		}
@@ -132,7 +147,7 @@ func parseWithAliases(m Metadata, src string) string {
 		a := re.FindStringSubmatch(s)
 		prefix := a[1]
 		tabname := a[2]
-		tableObject, ok := m.Tables[tabname]
+		tableObject, ok := m.Objects[tabname]
 		if !ok {
 			return s
 		}
@@ -149,11 +164,11 @@ func parseWithAliases(m Metadata, src string) string {
 		if !ok {
 			return s
 		}
-		tableObject, ok := m.Tables[tabname]
+		tableObject, ok := m.Objects[tabname]
 		if !ok {
 			return s
 		}
-		fieldObject, ok := tableObject.Fields[colname]
+		fieldObject, ok := tableObject.Params[colname]
 		if !ok {
 			return s
 		}
@@ -166,7 +181,7 @@ func parseWithAliases(m Metadata, src string) string {
 func restoreStringsAndComments(src string, buf []string) string {
 	res := src
 	for i := len(buf) - 1; i >= 0; i-- {
-		old := "#" + strconv.Itoa(i)
+		old := "«" + strconv.Itoa(i) + "»"
 		new := buf[i]
 		res = strings.Replace(res, old, new, 1)
 	}
@@ -217,7 +232,7 @@ func removeStringsAndComments(src string, buf []string) (string, []string) {
 			if k == len(src) {
 				com += src
 				buf = append(buf, com)
-				res += "#" + strconv.Itoa(len(buf)-1)
+				res += "«" + strconv.Itoa(len(buf)-1) + "»"
 				break
 			}
 			com += src[:k]
@@ -228,7 +243,7 @@ func removeStringsAndComments(src string, buf []string) (string, []string) {
 				open--
 				if open == 0 {
 					buf = append(buf, com)
-					res += "#" + strconv.Itoa(len(buf)-1)
+					res += "«" + strconv.Itoa(len(buf)-1) + "»"
 				}
 			}
 		}
