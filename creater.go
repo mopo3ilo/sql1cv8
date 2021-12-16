@@ -341,7 +341,7 @@ func initEnums(base *sql.DB, m Metadata, o *Object) (err error) {
 
 			name = "$" + name
 			m.Objects[name] = &Object{
-				DBName: "(select top 1 _KeyField from " + o.DBName + " where _EnumOrder = " + value + ")",
+				DBName: "(select top 1 _IDRRef from " + o.DBName + " where _EnumOrder = " + value + ")",
 				CVName: name,
 			}
 		}
@@ -382,7 +382,7 @@ func initPoints(base *sql.DB, m Metadata, o *Object) (err error) {
 
 		name = "$" + name
 		m.Objects[name] = &Object{
-			DBName: "(select top 1 _KeyField from " + o.DBName + " where _RoutePointOrder = " + value + ")",
+			DBName: "(select top 1 _IDRRef from " + o.DBName + " where _RoutePointOrder = " + value + ")",
 			CVName: name,
 		}
 	}
