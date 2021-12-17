@@ -310,10 +310,9 @@ func initRTRef(m Metadata, o *Object) (err error) {
 
 func initEnums(base *sql.DB, m Metadata, o *Object) (err error) {
 	var (
-		bin   []byte
-		val   [][]string
-		value int
-		reg   *regexp.Regexp
+		bin []byte
+		val [][]string
+		reg *regexp.Regexp
 	)
 
 	err = base.QueryRow("select BinaryData from Config where FileName = @p1", o.UUID).Scan(&bin)
@@ -329,23 +328,23 @@ func initEnums(base *sql.DB, m Metadata, o *Object) (err error) {
 		return
 	}
 	val = reg.FindAllStringSubmatch(string(bin), -1)
-	for _, v := range val {
-		if value > 0 {
-			name := o.CVName + "." + v[1]
-			value := strconv.Itoa(value)
-
-			m.Objects[name] = &Object{
-				DBName: value,
-				CVName: name,
-			}
-
-			name = "$" + name
-			m.Objects[name] = &Object{
-				DBName: "(select top 1 _IDRRef from " + o.DBName + " where _EnumOrder = " + value + ")",
-				CVName: name,
-			}
+	for i, v := range val {
+		if i == 0 {
+			continue
 		}
-		value++
+		name := o.CVName + "." + v[1]
+		value := strconv.Itoa(i - 1)
+
+		m.Objects[name] = &Object{
+			DBName: value,
+			CVName: name,
+		}
+
+		name = "$" + name
+		m.Objects[name] = &Object{
+			DBName: "(select top 1 _IDRRef from " + o.DBName + " where _EnumOrder = " + value + ")",
+			CVName: name,
+		}
 	}
 
 	return
