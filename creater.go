@@ -74,19 +74,22 @@ func LoadFromDB(cs string) (m Metadata, err error) {
 	defer base.Close()
 
 	m.Objects = make(map[string]*Object)
+	m.Language = "ru"
 	err = base.QueryRow(qryGetDBVersion).Scan(&m.Version)
 	if err != nil {
 		return
 	}
 
+	types = typesLang[m.Language]
 	initTypes(m)
 
+	fields = fieldsLang[m.Language]
 	obj, err := initObjects(base)
 	if err != nil {
 		return
 	}
 
-	rows, err := base.Query(qryGetDB)
+	rows, err := base.Query(qryGetDB[m.Language])
 	if err != nil {
 		return
 	}
@@ -194,7 +197,9 @@ func initObjects(base *sql.DB) (res func(n, t, p, s string, f bool) (*Object, bo
 		bin []byte
 		val [][]string
 		num map[string]string
+		typ map[string]string
 		ids map[string]string
+		syn map[string]map[string]string
 		reg *regexp.Regexp
 	)
 
@@ -206,21 +211,21 @@ func initObjects(base *sql.DB) (res func(n, t, p, s string, f bool) (*Object, bo
 	if err != nil {
 		return
 	}
-	reg, err = regexp.Compile(`{(\w{8}-\w{4}-\w{4}-\w{4}-\w{12}),"\w+",(\d+)}`)
-	if err != nil {
-		return
-	}
 	num = make(map[string]string)
+	typ = make(map[string]string)
+	reg = regexp.MustCompile(`{(\w{8}-\w{4}-\w{4}-\w{4}-\w{12}),"(\w+)",(\d+)}`)
 	val = reg.FindAllStringSubmatch(string(bin), -1)
 	for _, v := range val {
 		var (
-			id     string = v[1]
-			number string = v[2]
+			i string = v[1]
+			t string = v[2]
+			n string = v[3]
 		)
-		if _, ok := num[number]; ok {
+		if _, ok := num[n]; ok {
 			continue
 		}
-		num[number] = id
+		num[n] = i
+		typ[n] = t
 	}
 
 	err = base.QueryRow(qryGetCVNames).Scan(&bin)
@@ -231,21 +236,30 @@ func initObjects(base *sql.DB) (res func(n, t, p, s string, f bool) (*Object, bo
 	if err != nil {
 		return
 	}
-	reg, err = regexp.Compile(`\},\d+,\d+,(\w{8}-\w{4}-\w{4}-\w{4}-\w{12}),\w{8}-\w{4}-\w{4}-\w{4}-\w{12},\d+,"([^"]+)",`)
-	if err != nil {
-		return
-	}
 	ids = make(map[string]string)
+	syn = make(map[string]map[string]string)
+	reg = regexp.MustCompile(`(?sU),(\w{8}-\w{4}-\w{4}-\w{4}-\w{12}),\w{8}-\w{4}-\w{4}-\w{4}-\w{12},\d+,"([^"]+)",\r\n\{\d+,\d+(.*)\},\d+,\d+`)
 	val = reg.FindAllStringSubmatch(string(bin), -1)
+	reg = regexp.MustCompile(`\{"([^"]+)","([^"]+)"\}`)
 	for _, v := range val {
 		var (
-			id   string = v[1]
-			name string = v[2]
+			i string = v[1]
+			n string = v[2]
+			s string = v[3]
 		)
-		if _, ok := ids[id]; ok {
+		if _, ok := ids[i]; ok {
 			continue
 		}
-		ids[id] = name
+		ids[i] = n
+		syn[i] = make(map[string]string)
+		val := reg.FindAllStringSubmatch(s, -1)
+		for _, v := range val {
+			var (
+				l string = v[1]
+				s string = v[2]
+			)
+			syn[i][l] = s
+		}
 	}
 
 	res = func(n, t, p, s string, f bool) (obj *Object, ok bool) {
@@ -253,9 +267,11 @@ func initObjects(base *sql.DB) (res func(n, t, p, s string, f bool) (*Object, bo
 			name, ok := fields[n]
 			if ok {
 				obj = &Object{
-					Number: n,
-					DBName: t,
-					CVName: p + name + s,
+					Type:     n[1:],
+					Number:   n,
+					DBName:   t,
+					CVName:   p + name + s,
+					Synonyms: fieldSynonyms[n],
 				}
 				return obj, true
 			}
@@ -274,11 +290,13 @@ func initObjects(base *sql.DB) (res func(n, t, p, s string, f bool) (*Object, bo
 			m = make(map[string]*Object)
 		}
 		obj = &Object{
-			UUID:   i,
-			Number: n,
-			DBName: t,
-			CVName: p + name + s,
-			Params: m,
+			UUID:     i,
+			Type:     typ[n],
+			Number:   n,
+			DBName:   t,
+			CVName:   p + name + s,
+			Params:   m,
+			Synonyms: syn[i],
 		}
 		return obj, true
 	}
@@ -287,8 +305,9 @@ func initObjects(base *sql.DB) (res func(n, t, p, s string, f bool) (*Object, bo
 }
 
 func initTypes(m Metadata) {
-	for name, value := range types {
+	for value, name := range types {
 		m.Objects[name] = &Object{
+			Type:   "Type",
 			DBName: value,
 			CVName: name,
 		}
@@ -300,10 +319,12 @@ func initRTRef(m Metadata, o *Object) (err error) {
 	if err != nil {
 		return
 	}
-	name := o.CVName + ".ВидСсылки"
+	name := o.CVName + "." + fields["_IDTRef"]
 	m.Objects[name] = &Object{
-		DBName: t,
-		CVName: "ВидСсылки",
+		Type:     "TRef",
+		DBName:   t,
+		CVName:   name,
+		Synonyms: fieldSynonyms["_IDTRef"],
 	}
 	return
 }
@@ -323,10 +344,7 @@ func initEnums(base *sql.DB, m Metadata, o *Object) (err error) {
 	if err != nil {
 		return
 	}
-	reg, err = regexp.Compile(`\{\d+,\d+,\w{8}-\w{4}-\w{4}-\w{4}-\w{12}\},"([^"]+)",`)
-	if err != nil {
-		return
-	}
+	reg = regexp.MustCompile(`\{\d+,\d+,\w{8}-\w{4}-\w{4}-\w{4}-\w{12}\},"([^"]+)",`)
 	val = reg.FindAllStringSubmatch(string(bin), -1)
 	for i, v := range val {
 		if i == 0 {
@@ -336,12 +354,14 @@ func initEnums(base *sql.DB, m Metadata, o *Object) (err error) {
 		value := strconv.Itoa(i - 1)
 
 		m.Objects[name] = &Object{
+			Type:   "EnumOrder",
 			DBName: value,
 			CVName: name,
 		}
 
 		name = "$" + name
 		m.Objects[name] = &Object{
+			Type:   "EnumRRef",
 			DBName: "(select top 1 _IDRRef from " + o.DBName + " where _EnumOrder = " + value + ")",
 			CVName: name,
 		}
@@ -365,22 +385,21 @@ func initPoints(base *sql.DB, m Metadata, o *Object) (err error) {
 	if err != nil {
 		return
 	}
-	reg, err = regexp.Compile(`\},"([^"]+)",(\d+)\},\d+,\w{8}-\w{4}-\w{4}-\w{4}-\w{12},\d+\},\d+,`)
-	if err != nil {
-		return
-	}
+	reg = regexp.MustCompile(`\},"([^"]+)",(\d+)\},\d+,\w{8}-\w{4}-\w{4}-\w{4}-\w{12},\d+\},\d+,`)
 	val = reg.FindAllStringSubmatch(string(bin), -1)
 	for _, v := range val {
 		name := o.CVName + "." + v[1]
 		value := v[2]
 
 		m.Objects[name] = &Object{
+			Type:   "RoutePointOrder",
 			DBName: value,
 			CVName: name,
 		}
 
 		name = "$" + name
 		m.Objects[name] = &Object{
+			Type:   "RoutePointRRef",
 			DBName: "(select top 1 _IDRRef from " + o.DBName + " where _RoutePointOrder = " + value + ")",
 			CVName: name,
 		}

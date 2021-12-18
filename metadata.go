@@ -10,6 +10,7 @@ import (
 // Object объект метаданных
 type Object struct {
 	UUID     string             // Идентификатор
+	Type     string             // Тип объекта
 	Number   string             // Номер объекта DBNames
 	DBName   string             // Имя в базе данных
 	CVName   string             // Имя в конфигурации
@@ -37,8 +38,9 @@ func (o *Object) RTRefBin() (string, error) {
 
 // Metadata метаданные
 type Metadata struct {
-	Version string             // Версия метаданных
-	Objects map[string]*Object // Объекты метаданных первого уровня. Это либо таблицы, либо какие-то констаты вроде типов полей для составных типов, значения перечислений и виды ссылок
+	Version  string             // Версия метаданных
+	Language string             // Язык конфигурации
+	Objects  map[string]*Object // Объекты метаданных первого уровня. Это либо таблицы, либо какие-то констаты вроде типов полей для составных типов, значения перечислений и виды ссылок
 }
 
 // SaveToFile сохраняет метаданные в файл.
