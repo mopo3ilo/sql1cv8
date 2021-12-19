@@ -1,8 +1,7 @@
 package sql1cv8
 
 // Типы полей (имена)
-var types map[string]string
-var typesLang = map[string]map[string]string{
+var types = map[string]map[string]string{
 	"en": {},
 	"ru": {
 		"NULL": "Тип.NULL",
@@ -17,8 +16,7 @@ var typesLang = map[string]map[string]string{
 }
 
 // Стандартные поля (имена)
-var fields map[string]string
-var fieldsLang = map[string]map[string]string{
+var fields = map[string]map[string]string{
 	"en": {},
 	"ru": {
 		"_Active":          "Активность",

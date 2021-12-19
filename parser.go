@@ -16,7 +16,6 @@ func (m Metadata) Parse(src string) (res string, err error) {
 	res = src
 
 	res, buf = removeStringsAndComments(res, buf)
-	res = parseShorts(m, res)
 	res = markStatements(res)
 	res = parseFullConstructions(m, res)
 	res, err = parseWithBrackets(m, res)
@@ -99,19 +98,6 @@ func unmarkStatements(src string) string {
 	return strings.ReplaceAll(src, "▶", "")
 }
 
-func parseShorts(m Metadata, src string) string {
-	re := regexp.MustCompile(`\[\$(\$[\pL\w\.]+)\]`)
-	return re.ReplaceAllStringFunc(src, func(s string) string {
-		a := re.FindStringSubmatch(s)
-		tabname := a[1]
-		tableObject, ok := m.Objects[tabname]
-		if !ok {
-			return s
-		}
-		return tableObject.DBName
-	})
-}
-
 func parseFullConstructions(m Metadata, src string) string {
 	re := regexp.MustCompile(`\[\$([\pL\w\.]+)\]\.\[\$([\pL\w\.]+)\]`)
 	return re.ReplaceAllStringFunc(src, func(s string) string {
@@ -135,14 +121,14 @@ func parseWithAliases(m Metadata, src string) string {
 	res := src
 
 	aliases := map[string]string{}
-	re = regexp.MustCompile(`(?si)(?:\.\.|\[dbo\]\.|\bdbo\.|[^\.])\[\$([\pL\w\.]+)\](?:\s+as\s+|\s+)(?:\[(.+?)\]|(\w+))`)
+	re = regexp.MustCompile(`(?si)(?:\.\.|\[dbo\]\.|\bdbo\.|[^\.])\[\$(\$?[\pL\w\.]+)\](?:\s+as\s+|\s+)(?:\[(.+?)\]|(\w+))`)
 	for _, v := range re.FindAllStringSubmatch(res, -1) {
 		tabname := v[1]
 		aliasname := v[2] + v[3]
 		aliases[aliasname] = tabname
 	}
 
-	re = regexp.MustCompile(`(?si)((?:\.\.|\[dbo\]\.|\bdbo\.|[^\.]))\[\$([\pL\w\.]+)\]`)
+	re = regexp.MustCompile(`(?si)((?:\.\.|\[dbo\]\.|\bdbo\.|[^\.]))\[\$(\$?[\pL\w\.]+)\]`)
 	res = re.ReplaceAllStringFunc(res, func(s string) string {
 		a := re.FindStringSubmatch(s)
 		prefix := a[1]

@@ -76,14 +76,11 @@ func LoadFromDB(cs string) (m Metadata, err error) {
 		return
 	}
 
-	types = typesLang[m.Language]
-	initTypes(m)
-
-	fields = fieldsLang[m.Language]
-	obj, err := initObjects(base)
+	obj, err := initObjects(base, &m)
 	if err != nil {
 		return
 	}
+	obj.typesInsert()
 
 	rows, err := base.Query(qryGetDB[m.Language])
 	if err != nil {
@@ -142,14 +139,11 @@ func LoadFromDB(cs string) (m Metadata, err error) {
 
 			switch dataType {
 			case "Enum":
-				obj.enumsInsert(m, tableObject)
+				obj.enumsInsert(tableObject)
 			case "BPrPoints":
-				obj.pointsInsert(m, tableObject)
+				obj.pointsInsert(tableObject)
 			}
-			initRTRef(m, tableObject)
-			if err != nil {
-				return
-			}
+			obj.rtrefInsert(tableObject)
 
 			vn = ""
 			vtExist = true
