@@ -8,6 +8,9 @@ import (
 )
 
 type initedObjects struct {
+	m       *Metadata
+	fields  map[string]string
+	types   map[string]string
 	dbnames *dbnames
 	cvnames *cvnames
 	enums   map[string]enums
@@ -16,7 +19,7 @@ type initedObjects struct {
 
 func (obj *initedObjects) obj(n, t, p, s string, f bool) (o *Object, ok bool) {
 	if f {
-		name, ok := fields[n]
+		name, ok := obj.fields[n]
 		if ok {
 			o = &Object{
 				Type:     n[1:],
@@ -53,46 +56,152 @@ func (obj *initedObjects) obj(n, t, p, s string, f bool) (o *Object, ok bool) {
 	return o, true
 }
 
-func (obj *initedObjects) enumsInsert(m Metadata, o *Object) {
+func (obj *initedObjects) enumsInsert(o *Object) {
+	var qc, qd string
+
 	for _, e := range obj.enums[o.UUID] {
 		name := o.CVName + "." + e.val
-		m.Objects[name] = &Object{
+		obj.m.Objects[name] = &Object{
 			Type:     "EnumOrder",
 			DBName:   e.num,
 			CVName:   name,
 			Synonyms: e.syn,
 		}
 
+		qc += " when " + e.num + " then '" + e.val + "'"
+		qd += " when " + e.num + " then '" + e.syn[obj.m.Language] + "'"
+
 		name = "$" + name
-		m.Objects[name] = &Object{
+		obj.m.Objects[name] = &Object{
 			Type:   "EnumRRef",
 			DBName: "(select top 1 _IDRRef from " + o.DBName + " where _EnumOrder = " + e.num + ")",
 			CVName: name,
 		}
 	}
+
+	name := "$" + o.CVName
+	qry := "(select _IDRRef, case" + qc + " end _Code, case" + qd + " end _Description from " + o.DBName + ")"
+
+	obj.m.Objects[name] = &Object{
+		UUID:     o.UUID,
+		Type:     "EnumVirtual",
+		Number:   o.Number,
+		DBName:   qry,
+		CVName:   name,
+		Synonyms: o.Synonyms,
+		Params: map[string]*Object{
+			obj.fields["_IDRRef"]: {
+				Type:     "IDRRef",
+				Number:   "_IDRRef",
+				DBName:   "_IDRRef",
+				CVName:   obj.fields["_IDRRef"],
+				Synonyms: fieldSynonyms["_IDRRef"],
+			},
+			obj.fields["_Code"]: {
+				Type:     "Code",
+				Number:   "_Code",
+				DBName:   "_Code",
+				CVName:   obj.fields["_Code"],
+				Synonyms: fieldSynonyms["_Code"],
+			},
+			obj.fields["_Description"]: {
+				Type:     "Description",
+				Number:   "_Description",
+				DBName:   "_Description",
+				CVName:   obj.fields["_Description"],
+				Synonyms: fieldSynonyms["_Description"],
+			},
+		},
+	}
 }
 
-func (obj *initedObjects) pointsInsert(m Metadata, o *Object) {
+func (obj *initedObjects) pointsInsert(o *Object) {
+	var qc, qd string
+
 	for _, p := range obj.points[o.UUID] {
 		name := o.CVName + "." + p.val
-		m.Objects[name] = &Object{
+		obj.m.Objects[name] = &Object{
 			Type:     "RoutePointOrder",
 			DBName:   p.num,
 			CVName:   name,
 			Synonyms: p.syn,
 		}
 
+		qc += " when " + p.num + " then '" + p.val + "'"
+		qd += " when " + p.num + " then '" + p.syn[obj.m.Language] + "'"
+
 		name = "$" + name
-		m.Objects[name] = &Object{
+		obj.m.Objects[name] = &Object{
 			Type:   "RoutePointRRef",
 			DBName: "(select top 1 _IDRRef from " + o.DBName + " where _RoutePointOrder = " + p.num + ")",
 			CVName: name,
 		}
 	}
+
+	name := "$" + o.CVName
+	qry := "(select _IDRRef, case" + qc + " end _Code, case" + qd + " end _Description from " + o.DBName + ")"
+
+	obj.m.Objects[name] = &Object{
+		UUID:     o.UUID,
+		Type:     "RoutePointVirtual",
+		Number:   o.Number,
+		DBName:   qry,
+		CVName:   name,
+		Synonyms: o.Synonyms,
+		Params: map[string]*Object{
+			obj.fields["_IDRRef"]: {
+				Type:     "IDRRef",
+				Number:   "_IDRRef",
+				DBName:   "_IDRRef",
+				CVName:   obj.fields["_IDRRef"],
+				Synonyms: fieldSynonyms["_IDRRef"],
+			},
+			obj.fields["_Code"]: {
+				Type:     "Code",
+				Number:   "_Code",
+				DBName:   "_Code",
+				CVName:   obj.fields["_Code"],
+				Synonyms: fieldSynonyms["_Code"],
+			},
+			obj.fields["_Description"]: {
+				Type:     "Description",
+				Number:   "_Description",
+				DBName:   "_Description",
+				CVName:   obj.fields["_Description"],
+				Synonyms: fieldSynonyms["_Description"],
+			},
+		},
+	}
 }
 
-func initObjects(base *sql.DB) (obj *initedObjects, err error) {
-	obj = &initedObjects{}
+func (obj *initedObjects) rtrefInsert(o *Object) {
+	t, err := o.RTRefBin()
+	if err != nil {
+		return
+	}
+	name := o.CVName + "." + obj.fields["_IDTRef"]
+	obj.m.Objects[name] = &Object{
+		Type:     "TRef",
+		DBName:   t,
+		CVName:   name,
+		Synonyms: fieldSynonyms["_IDTRef"],
+	}
+}
+
+func (obj *initedObjects) typesInsert() {
+	for value, name := range obj.types {
+		obj.m.Objects[name] = &Object{
+			Type:   "Type",
+			DBName: value,
+			CVName: name,
+		}
+	}
+}
+
+func initObjects(base *sql.DB, metadata *Metadata) (obj *initedObjects, err error) {
+	obj = &initedObjects{m: metadata}
+	obj.types = types[obj.m.Language]
+	obj.fields = fields[obj.m.Language]
 
 	var bin []byte
 
