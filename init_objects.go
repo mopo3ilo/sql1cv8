@@ -80,7 +80,7 @@ func (obj *initedObjects) enumsInsert(o *Object) {
 	}
 
 	name := "$" + o.CVName
-	qry := "(select _IDRRef, case" + qc + " end _Code, case" + qd + " end _Description from " + o.DBName + ")"
+	qry := "(select _IDRRef, case _EnumOrder" + qc + " end _Code, case" + qd + " end _Description from " + o.DBName + ")"
 
 	obj.m.Objects[name] = &Object{
 		UUID:     o.UUID,
@@ -139,7 +139,7 @@ func (obj *initedObjects) pointsInsert(o *Object) {
 	}
 
 	name := "$" + o.CVName
-	qry := "(select _IDRRef, case" + qc + " end _Code, case" + qd + " end _Description from " + o.DBName + ")"
+	qry := "(select _IDRRef, case _RoutePointOrder" + qc + " end _Code, case" + qd + " end _Description from " + o.DBName + ")"
 
 	obj.m.Objects[name] = &Object{
 		UUID:     o.UUID,
