@@ -1,14 +1,10 @@
 package sql1cv8
 
 import (
-	"bytes"
-	"compress/flate"
 	"database/sql"
 	"encoding/json"
 	"io"
 	"os"
-	"regexp"
-	"strconv"
 
 	_ "github.com/denisenkom/go-mssqldb"
 )
@@ -73,8 +69,8 @@ func LoadFromDB(cs string) (m Metadata, err error) {
 	}
 	defer base.Close()
 
-	m.Objects = make(map[string]*Object)
 	m.Language = "ru"
+	m.Objects = make(map[string]*Object, 65536)
 	err = base.QueryRow(qryGetDBVersion).Scan(&m.Version)
 	if err != nil {
 		return
@@ -137,7 +133,7 @@ func LoadFromDB(cs string) (m Metadata, err error) {
 
 		if tn != tableNumber {
 			tn = tableNumber
-			tableObject, ttExist = obj(tableNumber, tableName, tablePrefix, tableSuffix, false)
+			tableObject, ttExist = obj.obj(tableNumber, tableName, tablePrefix, tableSuffix, false)
 			if !ttExist {
 				continue
 			}
@@ -146,15 +142,9 @@ func LoadFromDB(cs string) (m Metadata, err error) {
 
 			switch dataType {
 			case "Enum":
-				err = initEnums(base, m, tableObject)
-				if err != nil {
-					return
-				}
+				obj.enumsInsert(m, tableObject)
 			case "BPrPoints":
-				err = initPoints(base, m, tableObject)
-				if err != nil {
-					return
-				}
+				obj.pointsInsert(m, tableObject)
 			}
 			initRTRef(m, tableObject)
 			if err != nil {
@@ -170,7 +160,7 @@ func LoadFromDB(cs string) (m Metadata, err error) {
 
 		if vn != vtNumber {
 			vn = vtNumber
-			tableObject, vtExist = obj(vtNumber, tableName, ttCVName+vtPrefix, vtSuffix, false)
+			tableObject, vtExist = obj.obj(vtNumber, tableName, ttCVName+vtPrefix, vtSuffix, false)
 			if !vtExist {
 				continue
 			}
@@ -181,228 +171,12 @@ func LoadFromDB(cs string) (m Metadata, err error) {
 			continue
 		}
 
-		fieldObject, flExist = obj(fieldNumber, fieldName, fieldPrefix, fieldSuffix, true)
+		fieldObject, flExist = obj.obj(fieldNumber, fieldName, fieldPrefix, fieldSuffix, true)
 		if !flExist {
 			continue
 		}
 		flCVName = fieldObject.CVName
 		tableObject.Params[flCVName] = fieldObject
-	}
-
-	return
-}
-
-func initObjects(base *sql.DB) (res func(n, t, p, s string, f bool) (*Object, bool), err error) {
-	var (
-		bin []byte
-		val [][]string
-		num map[string]string
-		typ map[string]string
-		ids map[string]string
-		syn map[string]map[string]string
-		reg *regexp.Regexp
-	)
-
-	err = base.QueryRow(qryGetDBNames).Scan(&bin)
-	if err != nil {
-		return
-	}
-	bin, err = io.ReadAll(flate.NewReader(bytes.NewReader(bin)))
-	if err != nil {
-		return
-	}
-	num = make(map[string]string)
-	typ = make(map[string]string)
-	reg = regexp.MustCompile(`{(\w{8}-\w{4}-\w{4}-\w{4}-\w{12}),"(\w+)",(\d+)}`)
-	val = reg.FindAllStringSubmatch(string(bin), -1)
-	for _, v := range val {
-		var (
-			i string = v[1]
-			t string = v[2]
-			n string = v[3]
-		)
-		if _, ok := num[n]; ok {
-			continue
-		}
-		num[n] = i
-		typ[n] = t
-	}
-
-	err = base.QueryRow(qryGetCVNames).Scan(&bin)
-	if err != nil {
-		return
-	}
-	bin, err = io.ReadAll(flate.NewReader(bytes.NewReader(bin)))
-	if err != nil {
-		return
-	}
-	ids = make(map[string]string)
-	syn = make(map[string]map[string]string)
-	reg = regexp.MustCompile(`(?sU),(\w{8}-\w{4}-\w{4}-\w{4}-\w{12}),\w{8}-\w{4}-\w{4}-\w{4}-\w{12},\d+,"([^"]+)",\r\n\{\d+,\d+(.*)\},\d+,\d+`)
-	val = reg.FindAllStringSubmatch(string(bin), -1)
-	reg = regexp.MustCompile(`\{"([^"]+)","([^"]+)"\}`)
-	for _, v := range val {
-		var (
-			i string = v[1]
-			n string = v[2]
-			s string = v[3]
-		)
-		if _, ok := ids[i]; ok {
-			continue
-		}
-		ids[i] = n
-		syn[i] = make(map[string]string)
-		val := reg.FindAllStringSubmatch(s, -1)
-		for _, v := range val {
-			var (
-				l string = v[1]
-				s string = v[2]
-			)
-			syn[i][l] = s
-		}
-	}
-
-	res = func(n, t, p, s string, f bool) (obj *Object, ok bool) {
-		if f {
-			name, ok := fields[n]
-			if ok {
-				obj = &Object{
-					Type:     n[1:],
-					Number:   n,
-					DBName:   t,
-					CVName:   p + name + s,
-					Synonyms: fieldSynonyms[n],
-				}
-				return obj, true
-			}
-		}
-
-		i, ok := num[n]
-		if !ok {
-			return nil, false
-		}
-		name, ok := ids[i]
-		if !ok {
-			return nil, false
-		}
-		var m map[string]*Object
-		if !f {
-			m = make(map[string]*Object)
-		}
-		obj = &Object{
-			UUID:     i,
-			Type:     typ[n],
-			Number:   n,
-			DBName:   t,
-			CVName:   p + name + s,
-			Params:   m,
-			Synonyms: syn[i],
-		}
-		return obj, true
-	}
-
-	return
-}
-
-func initTypes(m Metadata) {
-	for value, name := range types {
-		m.Objects[name] = &Object{
-			Type:   "Type",
-			DBName: value,
-			CVName: name,
-		}
-	}
-}
-
-func initRTRef(m Metadata, o *Object) (err error) {
-	t, err := o.RTRefBin()
-	if err != nil {
-		return
-	}
-	name := o.CVName + "." + fields["_IDTRef"]
-	m.Objects[name] = &Object{
-		Type:     "TRef",
-		DBName:   t,
-		CVName:   name,
-		Synonyms: fieldSynonyms["_IDTRef"],
-	}
-	return
-}
-
-func initEnums(base *sql.DB, m Metadata, o *Object) (err error) {
-	var (
-		bin []byte
-		val [][]string
-		reg *regexp.Regexp
-	)
-
-	err = base.QueryRow("select BinaryData from Config where FileName = @p1", o.UUID).Scan(&bin)
-	if err != nil {
-		return
-	}
-	bin, err = io.ReadAll(flate.NewReader(bytes.NewReader(bin)))
-	if err != nil {
-		return
-	}
-	reg = regexp.MustCompile(`\{\d+,\d+,\w{8}-\w{4}-\w{4}-\w{4}-\w{12}\},"([^"]+)",`)
-	val = reg.FindAllStringSubmatch(string(bin), -1)
-	for i, v := range val {
-		if i == 0 {
-			continue
-		}
-		name := o.CVName + "." + v[1]
-		value := strconv.Itoa(i - 1)
-
-		m.Objects[name] = &Object{
-			Type:   "EnumOrder",
-			DBName: value,
-			CVName: name,
-		}
-
-		name = "$" + name
-		m.Objects[name] = &Object{
-			Type:   "EnumRRef",
-			DBName: "(select top 1 _IDRRef from " + o.DBName + " where _EnumOrder = " + value + ")",
-			CVName: name,
-		}
-	}
-
-	return
-}
-
-func initPoints(base *sql.DB, m Metadata, o *Object) (err error) {
-	var (
-		bin []byte
-		val [][]string
-		reg *regexp.Regexp
-	)
-
-	err = base.QueryRow("select BinaryData from Config where FileName = @p1", o.UUID+".7").Scan(&bin)
-	if err != nil {
-		return
-	}
-	bin, err = io.ReadAll(flate.NewReader(bytes.NewReader(bin)))
-	if err != nil {
-		return
-	}
-	reg = regexp.MustCompile(`\},"([^"]+)",(\d+)\},\d+,\w{8}-\w{4}-\w{4}-\w{4}-\w{12},\d+\},\d+,`)
-	val = reg.FindAllStringSubmatch(string(bin), -1)
-	for _, v := range val {
-		name := o.CVName + "." + v[1]
-		value := v[2]
-
-		m.Objects[name] = &Object{
-			Type:   "RoutePointOrder",
-			DBName: value,
-			CVName: name,
-		}
-
-		name = "$" + name
-		m.Objects[name] = &Object{
-			Type:   "RoutePointRRef",
-			DBName: "(select top 1 _IDRRef from " + o.DBName + " where _RoutePointOrder = " + value + ")",
-			CVName: name,
-		}
 	}
 
 	return
