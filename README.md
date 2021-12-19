@@ -254,7 +254,7 @@ select
   t._IDRRef,
   t._Code,
   t._Description
-from (select _IDRRef, case when 0 then 'Наличная' when 1 then 'Безналичная' ... end _Code, case when 0 then 'Наличная' when 1 then 'Безналичная' ... end _Description from _Enum1273) t
+from (select _IDRRef, case _EnumOrder when 0 then 'Наличная' when 1 then 'Безналичная' ... end _Code, case when 0 then 'Наличная' when 1 then 'Безналичная' ... end _Description from _Enum1273) t
 -- [$$Перечисление.ФормыОплаты.Наличная]
 (select top 1 _IDRRef from _Enum1273 where _EnumOrder = 0)
 /*
@@ -268,7 +268,7 @@ select
   t._IDRRef,
   t._Code,
   t._Description
-from (select _IDRRef, case when 1 then 'Старт' when 3 then 'Выполнить' ... end _Code, case when 1 then '' when 3 then 'Выполнить' ... end _Description from _BPrPoints1298) t
+from (select _IDRRef, case _RoutePointOrder when 1 then 'Старт' when 3 then 'Выполнить' ... end _Code, case when 1 then '' when 3 then 'Выполнить' ... end _Description from _BPrPoints1298) t
 -- [$$БизнесПроцесс.Задание.ТочкиМаршрута.Выполнить]
 (select top 1 _IDRRef from _BPrPoints1298 where _RoutePointOrder = 3)
 ```
