@@ -17,7 +17,9 @@ type initedObjects struct {
 	points  map[string]points
 }
 
-func (obj *initedObjects) obj(n, t, p, s string, f bool) (o *Object, ok bool) {
+func (obj *initedObjects) obj(x, n, t, p, s string) (o *Object, ok bool) {
+	f := (x == "Fld")
+
 	if f {
 		name, ok := obj.fields[n]
 		if ok {
@@ -32,7 +34,7 @@ func (obj *initedObjects) obj(n, t, p, s string, f bool) (o *Object, ok bool) {
 		}
 	}
 
-	d, ok := obj.dbnames.m[n]
+	d, ok := obj.dbnames.m[x+n]
 	if !ok {
 		return nil, false
 	}
@@ -47,7 +49,7 @@ func (obj *initedObjects) obj(n, t, p, s string, f bool) (o *Object, ok bool) {
 	o = &Object{
 		UUID:     d.ids,
 		Type:     d.typ,
-		Number:   n,
+		Number:   d.num,
 		DBName:   t,
 		CVName:   p + c.val + s,
 		Params:   m,

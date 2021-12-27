@@ -10,6 +10,7 @@ type dbnames struct {
 type dbname struct {
 	ids string
 	typ string
+	num string
 }
 
 func processingDBNames(bin []byte) (d *dbnames) {
@@ -36,9 +37,10 @@ func processingDBNames(bin []byte) (d *dbnames) {
 				t = value
 			case 2:
 				n = value
-				d.m[n] = &dbname{
+				d.m[t+n] = &dbname{
 					ids: i,
 					typ: t,
+					num: n,
 				}
 
 				switch t {

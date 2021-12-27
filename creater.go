@@ -130,7 +130,7 @@ func LoadFromDB(cs string) (m Metadata, err error) {
 
 		if tn != tableNumber {
 			tn = tableNumber
-			tableObject, ttExist = obj.obj(tableNumber, tableName, tablePrefix, tableSuffix, false)
+			tableObject, ttExist = obj.obj(dataType, tableNumber, tableName, tablePrefix, tableSuffix)
 			if !ttExist {
 				continue
 			}
@@ -154,7 +154,7 @@ func LoadFromDB(cs string) (m Metadata, err error) {
 
 		if vn != vtNumber {
 			vn = vtNumber
-			tableObject, vtExist = obj.obj(vtNumber, tableName, ttCVName+vtPrefix, vtSuffix, false)
+			tableObject, vtExist = obj.obj("VT", vtNumber, tableName, ttCVName+vtPrefix, vtSuffix)
 			if !vtExist {
 				continue
 			}
@@ -165,7 +165,7 @@ func LoadFromDB(cs string) (m Metadata, err error) {
 			continue
 		}
 
-		fieldObject, flExist = obj.obj(fieldNumber, fieldName, fieldPrefix, fieldSuffix, true)
+		fieldObject, flExist = obj.obj("Fld", fieldNumber, fieldName, fieldPrefix, fieldSuffix)
 		if !flExist {
 			continue
 		}
