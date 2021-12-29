@@ -54,10 +54,14 @@ func processingDBNames(bin []byte) (d *dbnames) {
 			}
 		}
 	}
-	d.cntEnums = ce
-	d.qryEnums = "select FileName, BinaryData from Config where FileName in (" + qe[1:] + ")"
-	d.cntPoints = cp
-	d.qryPoints = "select left(FileName, 36) FileName, BinaryData from Config where FileName in (" + qp[1:] + ")"
+	if qe != "" {
+		d.cntEnums = ce
+		d.qryEnums = "select FileName, BinaryData from Config where FileName in (" + qe[1:] + ")"
+	}
+	if qp != "" {
+		d.cntPoints = cp
+		d.qryPoints = "select left(FileName, 36) FileName, BinaryData from Config where FileName in (" + qp[1:] + ")"
+	}
 
 	return d
 }
