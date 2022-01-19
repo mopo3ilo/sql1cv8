@@ -379,7 +379,7 @@ select * from (
         ,FieldName    = c.name
         ,TablePrefix  = 'РегистрНакопления.'
         ,TableNumber  = substring(t.name, 10, 10)
-        ,TableSuffix  = '.Итоги'
+        ,TableSuffix  = '.Остатки'
         ,VTPrefix     = ''
         ,VTNumber     = ''
         ,VTSuffix     = ''
