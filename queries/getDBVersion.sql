@@ -1,1 +1,1 @@
-select top 1 convert(varchar, dateadd(year, -(select top 1 Offset from _YearOffset), Modified), 120) Version from Config order by Modified desc
+select convert(varchar, max(modify_date), 120) Version from sys.tables
