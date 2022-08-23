@@ -269,6 +269,39 @@ from (
       and t.name not like '%[_]VT[0-9]%'
     union all
 
+    -- ЖурналДокументов
+    select DataType     = 'DocumentJournal'
+          ,TableName    = t.name
+          ,FieldName    = c.name
+          ,TablePrefix  = 'ЖурналДокументов.'
+          ,TableNumber  = substring(t.name, 17, patindex('%[^0-9]%', substring(t.name, 17, 10) + '.') - 1)
+          ,TableSuffix  = ''
+          ,VTPrefix     = ''
+          ,VTNumber     = ''
+          ,VTSuffix     = ''
+          ,FieldPrefix  = ''
+          ,FieldNumber  = case
+            when left(c.name, 4) = '_Fld' then substring(c.name, 5, patindex('%[^0-9]%', substring(c.name, 5, 10) + '.') - 1)
+            else c.name
+          end
+          ,FieldSuffix  = case
+            when right(c.name, 5) = '_TYPE' then '.Тип'
+            when right(c.name, 2) = '_L' then '.Булево'
+            when right(c.name, 2) = '_N' then '.Число'
+            when right(c.name, 2) = '_T' then '.Дата'
+            when right(c.name, 2) = '_S' then '.Строка'
+            when right(c.name, 2) = '_B' then '.Двоичный'
+            when right(c.name, 6) = '_RTRef' then '.ВидСсылки'
+            when right(c.name, 6) = '_RRRef' then '.Ссылка'
+            else ''
+          end
+    from sys.tables t
+        ,sys.columns c
+    where t.object_id = c.object_id
+      and t.name like '[_]DocumentJournal[0-9]%'
+      and t.name not like '%[_]VT[0-9]%'
+    union all
+
     -- РегистрСведений
     select DataType     = 'InfoRg'
           ,TableName    = t.name
