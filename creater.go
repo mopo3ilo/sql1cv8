@@ -89,7 +89,7 @@ func LoadFromDB(cs string) (m Metadata, err error) {
 	defer rows.Close()
 
 	var (
-		tn, vn                       string
+		tn, vn, to, vo               string
 		ttExist, vtExist, flExist    bool
 		ttCVName, vtCVName, flCVName string
 		tableObject, fieldObject     *Object
@@ -128,8 +128,9 @@ func LoadFromDB(cs string) (m Metadata, err error) {
 			return
 		}
 
-		if tn != tableNumber {
-			tn = tableNumber
+		tn = tablePrefix + tableNumber + tableSuffix
+		if to != tn {
+			to = tn
 			tableObject, ttExist = obj.obj(dataType, tableNumber, tableName, tablePrefix, tableSuffix)
 			if !ttExist {
 				continue
@@ -145,15 +146,16 @@ func LoadFromDB(cs string) (m Metadata, err error) {
 			}
 			obj.rtrefInsert(tableObject)
 
-			vn = ""
+			vo = ""
 			vtExist = true
 		}
 		if !ttExist {
 			continue
 		}
 
-		if vn != vtNumber {
-			vn = vtNumber
+		vn = vtPrefix + vtNumber + vtSuffix
+		if vo != vn {
+			vo = vn
 			tableObject, vtExist = obj.obj("VT", vtNumber, tableName, ttCVName+vtPrefix, vtSuffix)
 			if !vtExist {
 				continue

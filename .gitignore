@@ -1,2 +1,6 @@
 __debug_bin
+sql1cv8_test.*
+sql1cv8_result.*
+cvnames.txt
+dbnames.txt
 metadata.json
