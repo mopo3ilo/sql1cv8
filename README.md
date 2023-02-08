@@ -4,7 +4,7 @@
 [![go version](https://img.shields.io/github/go-mod/go-version/mopo3ilo/sql1cv8?label=go%20version)](https://go.dev/dl)
 [![godoc](https://img.shields.io/badge/godoc-reference-blue.svg)](https://pkg.go.dev/github.com/mopo3ilo/sql1cv8)
 [![go report](https://goreportcard.com/badge/github.com/mopo3ilo/sql1cv8)](https://goreportcard.com/report/github.com/mopo3ilo/sql1cv8)
-[![build](https://img.shields.io/github/workflow/status/mopo3ilo/sql1cv8/test%20module)](https://github.com/mopo3ilo/sql1cv8/actions)
+[![build](https://img.shields.io/github/actions/workflow/status/mopo3ilo/sql1cv8/test%20module)](https://github.com/mopo3ilo/sql1cv8/actions)
 [![codecov](https://img.shields.io/codecov/c/github/mopo3ilo/sql1cv8)](https://codecov.io/gh/mopo3ilo/sql1cv8)
 
 ## Описание
