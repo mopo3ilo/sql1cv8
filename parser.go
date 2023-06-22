@@ -17,6 +17,7 @@ func (m Metadata) Parse(src string) (res string, err error) {
 
 	res, buf = removeStringsAndComments(res, buf)
 	res = markStatements(res)
+	res = parseFuncConstructions(m, res)
 	res = parseFullConstructions(m, res)
 	res, err = parseWithBrackets(m, res)
 	if err != nil {
@@ -25,6 +26,129 @@ func (m Metadata) Parse(src string) (res string, err error) {
 	res = restoreStringsAndComments(res, buf)
 
 	return
+}
+
+func parseFuncConstructions(m Metadata, src string) string {
+	var re *regexp.Regexp
+	res := src
+
+	// UUID tables
+	re = regexp.MustCompile(`\[\$([\pL\w\.]+)\]\.UUID`)
+	res = re.ReplaceAllStringFunc(res, func(s string) string {
+		a := re.FindStringSubmatch(s)
+		tabname := a[1]
+		tableObject, ok := m.Objects[tabname]
+		if !ok {
+			return s
+		}
+		return "'" + tableObject.UUID + "'"
+	})
+
+	// UUID fields
+	re = regexp.MustCompile(`\[\$([\pL\w\.]+)\]\.\[\$([\pL\w\.]+)\]\.UUID`)
+	res = re.ReplaceAllStringFunc(res, func(s string) string {
+		a := re.FindStringSubmatch(s)
+		tabname := a[1]
+		colname := a[2]
+		tableObject, ok := m.Objects[tabname]
+		if !ok {
+			return s
+		}
+		fieldObject, ok := tableObject.Params[colname]
+		if !ok {
+			return s
+		}
+		return "'" + fieldObject.UUID + "'"
+	})
+
+	// Type tables
+	re = regexp.MustCompile(`\[\$([\pL\w\.]+)\]\.Type`)
+	res = re.ReplaceAllStringFunc(res, func(s string) string {
+		a := re.FindStringSubmatch(s)
+		tabname := a[1]
+		tableObject, ok := m.Objects[tabname]
+		if !ok {
+			return s
+		}
+		return "'" + tableObject.Type + "'"
+	})
+
+	// Type fields
+	re = regexp.MustCompile(`\[\$([\pL\w\.]+)\]\.\[\$([\pL\w\.]+)\]\.Type`)
+	res = re.ReplaceAllStringFunc(res, func(s string) string {
+		a := re.FindStringSubmatch(s)
+		tabname := a[1]
+		colname := a[2]
+		tableObject, ok := m.Objects[tabname]
+		if !ok {
+			return s
+		}
+		fieldObject, ok := tableObject.Params[colname]
+		if !ok {
+			return s
+		}
+		return "'" + fieldObject.Type + "'"
+	})
+
+	// Number tables
+	re = regexp.MustCompile(`\[\$([\pL\w\.]+)\]\.Number`)
+	res = re.ReplaceAllStringFunc(res, func(s string) string {
+		a := re.FindStringSubmatch(s)
+		tabname := a[1]
+		tableObject, ok := m.Objects[tabname]
+		if !ok {
+			return s
+		}
+		return tableObject.Number
+	})
+
+	// Number fields
+	re = regexp.MustCompile(`\[\$([\pL\w\.]+)\]\.\[\$([\pL\w\.]+)\]\.Number`)
+	res = re.ReplaceAllStringFunc(res, func(s string) string {
+		a := re.FindStringSubmatch(s)
+		tabname := a[1]
+		colname := a[2]
+		tableObject, ok := m.Objects[tabname]
+		if !ok {
+			return s
+		}
+		fieldObject, ok := tableObject.Params[colname]
+		if !ok {
+			return s
+		}
+		return fieldObject.Number
+	})
+
+	// DBName tables
+	re = regexp.MustCompile(`\[\$([\pL\w\.]+)\]\.DBName`)
+	res = re.ReplaceAllStringFunc(res, func(s string) string {
+		a := re.FindStringSubmatch(s)
+		tabname := a[1]
+		tableObject, ok := m.Objects[tabname]
+		if !ok {
+			return s
+		}
+		return "'" + tableObject.DBName + "'"
+	})
+
+	// DBName fields
+	re = regexp.MustCompile(`\[\$([\pL\w\.]+)\]\.\[\$([\pL\w\.]+)\]\.DBName`)
+	res = re.ReplaceAllStringFunc(res, func(s string) string {
+		a := re.FindStringSubmatch(s)
+		tabname := a[1]
+		colname := a[2]
+		tableObject, ok := m.Objects[tabname]
+		if !ok {
+			return s
+		}
+		fieldObject, ok := tableObject.Params[colname]
+		if !ok {
+			return s
+		}
+		return "'" + fieldObject.DBName + "'"
+	})
+
+	return res
 }
 
 func parseWithBrackets(m Metadata, src string) (res string, err error) {
